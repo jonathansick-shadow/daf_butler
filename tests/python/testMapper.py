@@ -2,7 +2,9 @@ import yaml
 
 from mapper import Mapper
 
+
 class TestMapper(Mapper):
+
     def __init__(self, config, source):
         classConfig = yaml.load("""
 classes:

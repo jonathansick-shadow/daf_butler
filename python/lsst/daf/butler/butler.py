@@ -7,18 +7,17 @@ from mapper import Mapper
 
 # One butler per task
 # One mapper per repo, customized for camera
-  # config can specify parent repos
+# config can specify parent repos
 # One registry per repo
 
 # Dataset classes specify readers/writers, template templates
 # Subsets specify additional dataId keys, query/fragment identifiers?
 # Describe existing datasets
 # Describe output datasets
-  # obs-specific, obs-generic
-  # dataset class
-  # path template
-  # dataid keys
-
+# obs-specific, obs-generic
+# dataset class
+# path template
+# dataid keys
 
 
 class Butler(object):
@@ -62,7 +61,7 @@ class Butler(object):
         locationList = self.mapper.map(datasetType, dataId, False)
         if len(locationList) == 0:
             _fatal(RuntimeError,
-                    "Unrecognized dataset type {}".format(datasetType))
+                   "Unrecognized dataset type {}".format(datasetType))
         obj = None
         for location in locationList:
             obj = location.get(obj)
@@ -77,15 +76,15 @@ class Butler(object):
         locationList = self.mapper.map(datasetType, dataId, True)
         if len(locationList) == 0:
             _fatal(RuntimeError,
-                    "Unrecognized dataset type {}".format(datasetType))
+                   "Unrecognized dataset type {}".format(datasetType))
         with self._lock(datasetType, dataId):
             if self.mapper.datasetExists(datasetType, dataId):
                 if self.get(datasetType, dataId) == obj:
                     return
                 _fatal(RuntimeError, "Attempt to overwrite dataset "
-                        "at {} (type={}, dataId={}) "
-                        "with different content: {}".format(
-                            location, datasetType, dataId, obj))
+                       "at {} (type={}, dataId={}) "
+                       "with different content: {}".format(
+                           location, datasetType, dataId, obj))
             for location in locationList:
                 location.put(obj)
             self.recordProvenance("put", datasetType, dataId, locationList)
@@ -124,8 +123,8 @@ class Butler(object):
 
         if alias in self.aliases:
             log.warn("Overwriting existing dataset type alias {}: "
-                    "old = {}, new = {}".format(
-                        self.aliases[alias], datasetType))
+                     "old = {}, new = {}".format(
+                         self.aliases[alias], datasetType))
         self.aliases[alias] = datasetType
 
     def recordProvenance(self, op, datasetType, dataId, locationList):
@@ -134,7 +133,7 @@ class Butler(object):
         log.info("Provenance: {} {} {} {}".format(
             op, datasetType, dataId, locationList))
         self.provenance.append((op, datasetType, dataId, [repr(location) for
-            location in locationList]))
+                                                          location in locationList]))
 
 
 ###############################################################################
@@ -149,7 +148,7 @@ class Butler(object):
             alias = datasetType[1:]
             if alias not in self.aliases:
                 _fatal(KeyError,
-                        "Undefined dataset type alias: {}".format(datasetType))
+                       "Undefined dataset type alias: {}".format(datasetType))
             return self.aliases[alias]
         return datasetType
 
@@ -157,6 +156,7 @@ class Butler(object):
         return DbLock(self.registryPath).lock(datasetType + ":" + repr(dataId))
 
 ###############################################################################
+
 
 def _fatal(exception, message):
     log.fatal(message)

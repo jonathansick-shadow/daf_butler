@@ -1,6 +1,8 @@
 import importlib
 
+
 class ButlerLocation(object):
+
     def __init__(self, path, storage, dataId):
         """Create a ButlerLocation object."""
 
@@ -8,7 +10,7 @@ class ButlerLocation(object):
         components = storage.rsplit(".", 2)
         if len(components) < 3:
             raise RuntimeError("No module or class for "
-                    "storage {}".format(storage))
+                               "storage {}".format(storage))
         module = importlib.import_module(components[0])
         if not hasattr(module, components[1]):
             raise RuntimeError("No such class {} for storage {}".format(

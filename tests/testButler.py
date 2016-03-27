@@ -6,7 +6,7 @@ print im
 b = butler.Butler("tests/calib_repo/_butler.yaml")
 b = butler.Butler("tests/raw_repo/_butler.yaml")
 b = butler.Butler("tests/raw_repo/_butler.yaml",
-        ["tests/calib_repo/_butler.yaml"])
+                  ["tests/calib_repo/_butler.yaml"])
 b = butler.Butler("tests/output_repo", [
     "tests/raw_repo/_butler.yaml",
     "tests/calib_repo/_butler.yaml"])

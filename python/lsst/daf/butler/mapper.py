@@ -8,6 +8,7 @@ import yaml
 
 from butlerLocation import ButlerLocation
 
+
 class Mapper(object):
 
     _mapperCache = {}
@@ -22,7 +23,7 @@ class Mapper(object):
                 config = _readSqliteConfig(parseResult.path)
             else:
                 _fatal(ValueError, "Unknown scheme {} for "
-                        "repository URL {}".format(parseResult.scheme, repoUrl)) 
+                       "repository URL {}".format(parseResult.scheme, repoUrl))
             if 'parent' not in config:
                 config['parents'] = []
             if inputRepos is not None:
@@ -31,7 +32,7 @@ class Mapper(object):
                         config['parents'].append(parent)
 
             Mapper._mapperCache[repoUrl] = Mapper._createFromConfig(
-                    config, repoUrl)
+                config, repoUrl)
         return Mapper._mapperCache[repoUrl]
 
     @staticmethod
@@ -40,18 +41,18 @@ class Mapper(object):
             mapperClassName = config['mapper']
         elif len(config['parents']) > 0:
             mapperClassName = Mapper.create(
-                    config['parents'][0]).config['mapper']
+                config['parents'][0]).config['mapper']
         else:
             raise RuntimeError("No mapper class in mapper configuration "
-                    "from {}".format(source))
+                               "from {}".format(source))
         components = mapperClassName.rsplit(".", 1)
         if len(components) < 2:
             raise RuntimeError("No module name for mapper class {} "
-                    "from {}".format(mapperClassName, source))
+                               "from {}".format(mapperClassName, source))
         module = importlib.import_module(components[0])
         if not hasattr(module, components[1]):
             raise RuntimeError("No such class {} for mapper class {} "
-                    "from {}".format(components[1], mapperClassName, source))
+                               "from {}".format(components[1], mapperClassName, source))
         cls = getattr(module, components[1])
         return cls(config, source)
 
@@ -71,21 +72,21 @@ class Mapper(object):
             datasetConfig = self.config["datasets"][datasetType]
             if "datasetClass" not in datasetConfig:
                 raise RuntimeError("No dataset class configured for "
-                        "dataset type {} in mapper "
-                        "from {}".format(datasetType, source))
+                                   "dataset type {} in mapper "
+                                   "from {}".format(datasetType, source))
             datasetClass = self.config["datasets"][datasetType]["datasetClass"]
             if not self.hasConfig('classes', datasetClass):
                 raise RuntimeError("Unknown dataset class {} for "
-                        "dataset type {} in mapper "
-                        "from {}".format(datasetClass, datasetType, source))
+                                   "dataset type {} in mapper "
+                                   "from {}".format(datasetClass, datasetType, source))
             if "urls" not in datasetConfig:
                 raise RuntimeError("No URL templates configured for "
-                        "dataset type {} in mapper "
-                        "from {}".format(datasetType, source))
+                                   "dataset type {} in mapper "
+                                   "from {}".format(datasetType, source))
 
         if "registryUrl" not in self.config:
             self.config["registryUrl"] = os.path.join(
-                    self.config["repoPath"], "_butler.sqlite3")
+                self.config["repoPath"], "_butler.sqlite3")
         try:
             conn = sqlite3.connect(self.config["registryUrl"])
             conn.execute("CREATE TABLE IF NOT EXISTS _config (yaml TEXT)")
@@ -120,34 +121,33 @@ class Mapper(object):
     def __setstate__(self, state):
         self.__init__(state[0], state[1])
 
-
     def map(self, datasetType, dataId, forWrite):
         datasetConfig, datasetClass, classConfig, urlTemplates = \
-                self._parseDatasetConfig(datasetType)
+            self._parseDatasetConfig(datasetType)
 
         if forWrite:
             if "writers" not in classConfig:
                 raise RuntimeError("No writers configured for "
-                        "dataset class {} used by dataset type {}".format(
-                            datasetClass, datasetType))
+                                   "dataset class {} used by dataset type {}".format(
+                                       datasetClass, datasetType))
             storages = classConfig["writers"]
         else:
             if "readers" not in classConfig:
                 raise RuntimeError("No readers configured for "
-                        "dataset class {} used by dataset type {}".format(
-                            datasetClass, datasetType))
+                                   "dataset class {} used by dataset type {}".format(
+                                       datasetClass, datasetType))
             storages = classConfig["readers"]
 
         if len(storages) != len(urlTemplates):
             raise RuntimeError("URL templates don't match storages "
-                    "for dataset type {}".format(datasetType))
+                               "for dataset type {}".format(datasetType))
 
         neededKeys = self.getKeys(datasetType, required=True)
         neededKeys.difference_update(dataId.keys())
 
         if len(neededKeys) != 0 and "lookups" in datasetConfig:
             newIds = self.doLookup(neededKeys, dataId,
-                    datasetConfig["lookups"])
+                                   datasetConfig["lookups"])
             neededKeys.difference_update(newIds.keys())
             dataId.update(newIds)
 
@@ -157,14 +157,14 @@ class Mapper(object):
                 dataIdList = self.listDatasets(datasetType, dataId)
             if len(dataIdList) > 1:
                 raise RuntimeError("Found multiple ({}) matches "
-                        "in repository for dataset type {} "
-                        "and dataId {}: dataIds {}".format(
-                            len(dataIdList), datasetType, dataId, dataIdList))
+                                   "in repository for dataset type {} "
+                                   "and dataId {}: dataIds {}".format(
+                                       len(dataIdList), datasetType, dataId, dataIdList))
             if len(dataIdList) == 0:
                 raise RuntimeError("Unable to determine required "
-                        "data identifiers {} for dataset type {} "
-                        " and dataId {}".format(
-                            neededKeys, datasetType, dataId))
+                                   "data identifiers {} for dataset type {} "
+                                   " and dataId {}".format(
+                                       neededKeys, datasetType, dataId))
             dataId = dataIdList[0]
 
         urls = []
@@ -187,7 +187,7 @@ class Mapper(object):
                 keys.update(self.getKeys(d, required))
         else:
             datasetConfig, datasetClass, classConfig, urlTemplates = \
-                    self._parseDatasetConfig(datasetType)
+                self._parseDatasetConfig(datasetType)
             keyRegexp = re.compile(r'(?<!\{)(\{\{)*\{(\w+?)(:.*?)?\}')
             for template in urlTemplates:
                 for match in keyRegexp.finditer(template):
@@ -216,14 +216,14 @@ class Mapper(object):
         dataId = partialDataId.copy()
 
         datasetConfig, datasetClass, classConfig, urlTemplates = \
-                self._parseDatasetConfig(datasetType)
+            self._parseDatasetConfig(datasetType)
 
         neededKeys = self.getKeys(datasetType, required=True)
         neededKeys.difference_update(partialDataId.keys())
 
         if len(neededKeys) != 0 and "lookups" in datasetConfig:
             newId = self._doLookups(neededKeys, dataId,
-                    datasetConfig["lookups"])
+                                    datasetConfig["lookups"])
             neededKeys.difference_update(newId.keys())
             dataId.update(newId)
 
@@ -231,7 +231,7 @@ class Mapper(object):
             dataIdList = [dataId]
         elif self.hasRegistryTable(datasetType):
             dataIdList = self._lookupByRegistry(datasetType, neededKeys,
-                    dataId, datasetConfig, classConfig)
+                                                dataId, datasetConfig, classConfig)
         else:
             dataIdList = self._lookupByGlob(neededKeys, urlTemplates, dataId)
 
@@ -254,14 +254,14 @@ class Mapper(object):
                 if not keys.isdisjoint(config['outputs']):
                     keys.difference_update(config['outputs'])
                     keys.update(
-                            set(config['inputs']).difference(availableKeys))
+                        set(config['inputs']).difference(availableKeys))
                     lookups.append(i)
                     foundLookups = True
         lookups.reverse()
         newId = dataId.copy()
         for index in lookups:
             ids = self._doLookup(neededKeys.intersection(config['outputs']),
-                    newId, lookupConfig)
+                                 newId, lookupConfig)
             newId.update(ids)
         return newId
 
@@ -280,7 +280,7 @@ class Mapper(object):
     def _lookupByGlob(self, neededKeys, urlTemplates, dataId):
         # TODO translate numbers from strings
         keyRegexp = re.compile(
-                r'(?<!\{)(\{\{)*\{(' + "|".join(neededKeys) + r')(:.*?)?\}')
+            r'(?<!\{)(\{\{)*\{(' + "|".join(neededKeys) + r')(:.*?)?\}')
         dataIdList = []
         for template in urlTemplates:
             # Escape all {key}s that we are searching for.
@@ -302,7 +302,7 @@ class Mapper(object):
             keyList = []
             for match in keyRegexp.finditer(newTemplate):
                 extractPattern += re.escape(
-                        match.string[lastEnd : match.start(2) - 1])
+                    match.string[lastEnd: match.start(2) - 1])
                 extractPattern += r'(.+?)'
                 keyList.append(match.group(2))
                 lastEnd = match.end()
@@ -325,6 +325,7 @@ class Mapper(object):
                     dataIdList.append(newDataId)
 
         return dataIdList
+
 
 def _readPathConfig(repoPath):
     if os.path.isdir(repoPath):
@@ -350,7 +351,8 @@ def _readPathConfig(repoPath):
             return _generateSingleFileConfig(repoPath)
     else:
         _fatal(RuntimeError,
-                "Nonexistent repository URL {}".format(repoPath))
+               "Nonexistent repository URL {}".format(repoPath))
+
 
 def _readYamlConfig(path):
     with open(path) as yamlFile:
@@ -358,6 +360,7 @@ def _readYamlConfig(path):
     if "repoPath" not in config:
         config["repoPath"] = os.path.dirname(path)
     return config
+
 
 def _readSqliteConfig(path):
     try:
@@ -368,10 +371,10 @@ def _readSqliteConfig(path):
             result = list(cur.fetchall())
             if len(result) > 1:
                 _fatal(RuntimeError, "Too many rows ({}) in "
-                        "configuration database {}".format(len(result), path))
+                       "configuration database {}".format(len(result), path))
             if len(result) <= 0:
                 _fatal(RuntimeError, "No data in "
-                        "configuration database {}".format(path))
+                       "configuration database {}".format(path))
             config = yaml.load(result[0][0])
             if "repoPath" not in config:
                 config["repoPath"] = os.path.dirname(path)
@@ -383,15 +386,18 @@ def _readSqliteConfig(path):
     finally:
         conn.close()
 
+
 def _generateMapperConfig(path):
     with open(path) as f:
         mapperName = f.readline().strip()
     return dict(mapper=mapperName, repoPath=os.path.dirname(path))
 
+
 def _generateSingleFileConfig(path):
     return dict(mapper="singleFileMapper.SingleFileMapper",
-            singleFilePath=path,
-            repoPath=os.path.dirname(path))
+                singleFilePath=path,
+                repoPath=os.path.dirname(path))
+
 
 def _fatal(exception, message):
     log.fatal(message)
